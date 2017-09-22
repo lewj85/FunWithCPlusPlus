@@ -145,17 +145,10 @@ Foo::setName(const string& s)
 	name = s;
 }
 
-// gimmick = c++ allows you to assign an rvalue to a const reference
-// all 
-
-
-// references and addresses are not the same thing
-// references hold addresses but they are syntactically they are identical to instances
-// instances can be rvalues or lvalues
-
+/* gimmick = c++ allows you to assign an rvalue to a const reference
 const int& is an lvalue that can reference an rvalue
 but int& cannot reference an rvalue
-because at some point in time, i could use int& to modify the temp value
+because at some point in time, i could use int& to modify the temp value */
 
 Foo f;
 f.setName("Bob"); // "Bob" is created as a temporary rvalue - a cstring.
@@ -310,12 +303,83 @@ ostream& operator<<(ostream& os, const Foo& f)
 ///////////////////////////////////////////////////////
 // LAMBDAS
 ///////////////////////////////////////////////////////
+// lambdas are used when you want to pass a function definition as a parameter!
+// note that if it is used as a parameter, then the scope of that definition is 
+// limited to that single instance of the function that calls it.
 
 
 ///////////////////////////////////////////////////////
 // MULTIPLE INHERITANCE
 ///////////////////////////////////////////////////////
 
+
+///////////////////////////////////////////////////////
+// VIRTUAL INHERITANCE
+///////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////
+// NESTED CLASSES
+///////////////////////////////////////////////////////
+// nested classes can reach the private data members of their containing class!
+class LinkedList
+{
+private:
+	int data;
+public:  // can make public but it's better to use private and use the Iterator class
+	class Node;  // nested class declaration
+};
+
+// nested class definition
+class LinkedList::Node
+{
+private:
+	LinkedList& containingList;  // reference to the LinkedList that this Node is contained in
+								// we don't want a setter for this because references are const addresses
+								// so the only time we want to be able to set it is when the Node is constructed
+public:
+	// declarations
+	Node(const LinkedList& m);  // constructor, pass a const reference of its containing class rather than make a copy of it...
+	int getData();
+	LinkedList::Node& self();
+};
+
+// nested class function definitions
+LinkedList::Node::Node(const LinkedList& m)
+	: containingList(m)// constructor with initialization list, note that we set containingList to m
+{
+	//containingList = m;  // set what LinkedList this Node belongs to
+	// NOTE: the above line won't work because we can't assign the containingList after its 
+	// been made because it's a reference and references can't change what they refer to.
+	// this is why we set this on the initialization list rather than inside the body
+}
+
+int LinkedList::Node::getData()
+{
+	return containingList.data; // it can access the private member of its containing class!!!!
+}
+
+LinkedList::Node& LinkedList::Node::self()
+{
+	return *this;  // return itself but as a reference! remember: "this" is a pointer
+}
+
+// example
+LinkedList a;
+LinkedList b;
+LinkedList::Node n(a); // 'n' is an instance of the nested class Node inside LinkedList instance 'a'
+num1 = n.getData();
+
+
+/* by the way, regarding initialization lists:
+if you ever have an inherited class but the parent class doesn't have a default constructor
+inside that subclass's constructor, you must call the parent class's constructor in the initialization list.
+you can't call the parent class's constructor anywhere else.
+by the way, the compiler will ignore the order in which you initialize inside an initialization list...
+THE ORDER MIGHT MATTER THOUGH!!! so the C++ standard tells compilers what order it must initialize in.
+the order is: parent classes first from left to right, then members from top to bottom (any members not
+in the initialization list will be defaulted, again in order from top to bottom), 
+*/
 
 ///////////////////////////////////////////////////////
 // OTHER FUN FACTS
@@ -325,3 +389,24 @@ ostream& operator<<(ostream& os, const Foo& f)
 // If you leave it defaulted, each compiler will assign char as either signed or unsigned
 // but there's no standard!!!
 // Fun Fact: "new" will always create on the heap, everything else creates on the stack
+
+// Pointer/Reference stuff
+int* = pointer to an int
+const int* = pointer to a int but treats it as const, so you can't change the int
+int* const = const pointer to an int, so the address can't change
+const int* const = const pointer to a int that is treated as const, so neither the address nor the int can change
+// references are like pointers that don't use pointer syntax, they represent a single instance
+// references and addresses are not the same thing
+// references hold addresses but they are syntactically they are identical to instances
+// instances can be rvalues or lvalues
+int& = reference to an int, acts like int* const, so it can't change the address it refers to, but you can use the dot operator
+int x;
+int& m; // won't work because you have to point somewhere... because it's a const... it will always point to null, which will fail to compile
+int& m = x;
+int& m = 42; // won't work because in this case because 42 is an rvalue and will disappear, 
+			// so when it disappears and that memory is overwritten by a new variable or whatever, 
+			// then we would be referring to an address with unknown data in it, and we could 
+			// modify that data, even if the data should be const - so this will fail to compile
+const int& m = 42;  // this is okay though because now we're saying that whatever replaces the rvalue
+					// we will not be able to modify using 'm'
+// see the rvalue section for more details...
