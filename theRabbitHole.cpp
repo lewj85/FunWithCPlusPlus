@@ -85,7 +85,7 @@ void printf_t<int, float>(const int& a, const float& b)
 
 
 ///////////////////////////////////////////////////////
-// CURIOSLY RECURRING TEMPLATE PATTERNS (CRTPs)
+// CURIOUSLY RECURRING TEMPLATE PATTERNS (CRTPs)
 ///////////////////////////////////////////////////////
 
 
@@ -299,23 +299,131 @@ ostream& operator<<(ostream& os, const Foo& f)
 }
 
 
-
 ///////////////////////////////////////////////////////
 // LAMBDAS
 ///////////////////////////////////////////////////////
 // lambdas are used when you want to pass a function definition as a parameter!
 // note that if it is used as a parameter, then the scope of that definition is 
-// limited to that single instance of the function that calls it.
+// limited to that single instance of the function that calls it
+[]()
 
+
+
+///////////////////////////////////////////////////////
+// POLYMORPHISM (VIRTUAL METHODS, PURE VIRTUAL METHODS, ABSTRACTION)
+///////////////////////////////////////////////////////
+class Shape
+{
+public:
+	float area()
+	{
+		return 0; // whatever
+	}
+};
+class Triangle : public Shape
+{
+public:
+	float base;
+	float height;
+	float area()
+	{
+		return base * height / 2f;
+	}
+};
+Triangle myTriangle; // declare a Triangle
+Shape myShape = myTriangle; // this would be 'clipping' because you're putting something big
+							// into something small, so it would lose its Triangle members
+Shape& myShape = myTriangle; // so we do this instead: a reference to a Shape
+Shape* myShapePtr = &myTriangle; // this would work too. useful if you want to point to other shapes later
+x = myShape.area();  // x will be 0!!! this refers to a shape, not a triangle, so it uses the shape's definition!!!
+x = myShapePtr->area();  // x will be 0!!! this points to a shape, not a triangle, so it uses the shape's definition!!!
+
+// so to avoid this problem we define Shape using a virtual method 
+class Shape
+{
+public:
+	virtual float area()
+	{
+		return 0; // whatever
+	}
+};
+
+// a better way to do this though is to use pure virtual methods, which have no definition
+// (actually you can still define it because C++ is stupid), and thus force the inheriting
+// class to define it (actually you aren't forced to because C++ is stupid)
+class Shape
+{
+public:
+	virtual float area() = 0;  // instead of a definition, we just put = 0
+								// yes, it has to be = 0, not = anything else
+};
+float Shape::area()
+{
+	// this definition is completely worthless... the inherited class will force a new definition!
+}
+
+/* the 3 rules of abstraction:
+rule 1: any class which has a pure virtual method (doesn't need to define it though) is an abstract class
+rule 2: redefining an inherited pure virtual method makes that method virtual instead of pure virtual
+rule 3: you cannot create instances of an abstract class (which is why you don't need to define its methods!)
+*/
 
 ///////////////////////////////////////////////////////
 // MULTIPLE INHERITANCE
 ///////////////////////////////////////////////////////
+// visibility vs accessability 
+// reminder: 'protected' is private to everyone but children/derived classes
+// for public inheritance, just use ":" after the class name to say what it inherits from
+class Abc : public Def
+{ 
+	// definition 
+};
+
+// protected inheritance, public becomes protected, protected stays protected
+class Abc : protected Def
+{ 
+	// Def's public becomes protected
+};
+
+// private inheritance, everything becomes private
+class Abc : private Def
+{ 
+	// everything is private
+};
+
+// an exception to this is to use the keyword 'using'
+class Abc : public Def  // can put public/protected/private here
+{ 
+public:
+	using Def::funcname; 	// makes Def's funcname() a public method/function member inside Abc
+							// usually used to make something public into private, not this way...
+							// note: funcname doesn't have parentheses
+private:
+	using Def::funcname2;	// more common to take a public method and turn it private
+};
+
+class Abc : public Def, Ghi, private Jkl // Ghi is defaulted to private since it's not specified
+{ 
+	// definition
+};
+
+// if Ghi and Jkl have the same function name, "myfunc()", you have to specify which one
+Abc potato;
+potato.Ghi::myfunc();
+potato.Jkl::myfunc();
+
+// if each version of myfunc() takes different parameters, you actually don't need to specify 
+potato.myfunc(42)	// Ghi's myfunc() takes an int
+potato.myfunc("hello")  // Jkl's myfunc() takes a cstring/string
 
 
 ///////////////////////////////////////////////////////
 // VIRTUAL INHERITANCE
 ///////////////////////////////////////////////////////
+// diamond problem!
+// class D inherits from both B and C, but B and C both inherit from A
+// so when we call one of A's functions in D, does it inherit that from B or C?
+A::B::D.foo()
 
 
 ///////////////////////////////////////////////////////
@@ -370,7 +478,6 @@ LinkedList b;
 LinkedList::Node n(a); // 'n' is an instance of the nested class Node inside LinkedList instance 'a'
 num1 = n.getData();
 
-
 /* by the way, regarding initialization lists:
 if you ever have an inherited class but the parent class doesn't have a default constructor
 inside that subclass's constructor, you must call the parent class's constructor in the initialization list.
@@ -381,13 +488,15 @@ the order is: parent classes first from left to right, then members from top to 
 in the initialization list will be defaulted, again in order from top to bottom), 
 */
 
+
 ///////////////////////////////////////////////////////
 // OTHER FUN FACTS
 ///////////////////////////////////////////////////////
-// Fun fact: you can use "unsigned char" if you wanna use chars as indices. Can't use
-// signed char because you can't have negative indexes...
-// If you leave it defaulted, each compiler will assign char as either signed or unsigned
-// but there's no standard!!!
+/* Fun fact: you can use "unsigned char" if you wanna use chars as indices. Can't use
+signed char because you can't have negative indexes...
+If you leave it defaulted, each compiler will assign char as either signed or unsigned
+but there's no standard!!! */
+
 // Fun Fact: "new" will always create on the heap, everything else creates on the stack
 
 // Pointer/Reference stuff
@@ -403,10 +512,10 @@ int& = reference to an int, acts like int* const, so it can't change the address
 int x;
 int& m; // won't work because you have to point somewhere... because it's a const... it will always point to null, which will fail to compile
 int& m = x;
-int& m = 42; // won't work because in this case because 42 is an rvalue and will disappear, 
-			// so when it disappears and that memory is overwritten by a new variable or whatever, 
-			// then we would be referring to an address with unknown data in it, and we could 
-			// modify that data, even if the data should be const - so this will fail to compile
-const int& m = 42;  // this is okay though because now we're saying that whatever replaces the rvalue
-					// we will not be able to modify using 'm'
-// see the rvalue section for more details...
+int& m = 42; /* won't work because in this case because 42 is an rvalue and will disappear, 
+			so when it disappears and that memory is overwritten by a new variable or whatever, 
+			then we would be referring to an address with unknown data in it, and we could 
+			modify that data, even if the data should be const - so this will fail to compile */
+const int& m = 42;  /* this is okay though because now we're saying that whatever replaces the rvalue
+					we will not be able to modify using 'm'
+					see the rvalue section for more details... */
