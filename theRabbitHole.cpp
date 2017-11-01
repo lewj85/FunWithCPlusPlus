@@ -519,3 +519,36 @@ int& m = 42; /* won't work because in this case because 42 is an rvalue and will
 const int& m = 42;  /* this is okay though because now we're saying that whatever replaces the rvalue
 					we will not be able to modify using 'm'
 					see the rvalue section for more details... */
+
+					
+// fun fact: in C++, structs are classes where all methods and data members are public. yes, you can write methods for structs.
+// fun fact: you could add functions into structs in C using function pointers!
+void StructName_functionA() 
+{
+	//definition 
+}
+int StructName_functionB(float)
+{
+	//definition 
+}
+struct StructName
+{
+	static StructName(*init)();
+	void(*functionA)();
+	static int(*functionB)(float);
+};
+StructName StructName_init()
+{
+	StructName s;
+	s->functionA = &StructName_functionA; //this must be done for non-static methods
+}
+int(*StructName::functionB)(float) = &StructName_functionB; //this works only because StructName::functionB is static
+StructName(*StructName::init)() = &StructName_init;
+//using it:
+StructName s = StructName::init();
+s.functionA();
+s.functionB(); // dot operator works in C++ (and C mostly) but specifically doesn't for statics in C
+StructName::functionB(1.5f); // would work in C
+
+
+// fun fact: functors are data members that are called as functions because the function operator () is overloaded
