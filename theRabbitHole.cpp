@@ -271,7 +271,7 @@ public:
 	string(string&& x)
 	{
 		//steal array //ptr = x.ptr
-		//fuck over x //x.ptr = nullptr
+		//screw over x //x.ptr = nullptr
 	}
 	operator=(string&& x)
 	{
@@ -552,3 +552,17 @@ StructName::functionB(1.5f); // would work in C
 
 
 // fun fact: functors are data members that are called as functions because the function operator () is overloaded
+
+// cool trick for a=b,b=a swaps - "XOR swap" - note: both values must be at different addresses
+int x = 5; 
+int y = 8;
+x ^= y;
+y ^= x;
+x ^= y;
+// yes, really.
+
+// another cool XOR trick: can convert values to booleans and then compare them
+int a = 3;
+int b = 4;
+// convert them to booleans using ! operator, make sure the bools don't match with !=
+if (!a != !b) { // whatever }
