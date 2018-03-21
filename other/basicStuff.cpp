@@ -47,7 +47,7 @@ vector<string> split(const char *str, char c = ' ')
 Arrays
 int myArray[100];
 int myArray[] = { 1, 2, 3 };  // max size stuck at 3
-int myArray[10] = { 1, 2, 3 };  // everything beyond the first 2 indices will be initialized to 0, not unknown values
+int myArray[10] = { 1, 2, 3 };  // everything beyond the first 3 indices will be initialized to 0, not unknown values
 int myArray[10] = { 0 };  // so this will initialize all values to 0! no garbage/unknown values
 int myArray[10] = { };  // this initializes all values to 0 in C++, but not allowed in C
 int array[1024] = {[0 ... 1023] = 42};  // sets all to 42 but only works for GCC compilers!!!!
