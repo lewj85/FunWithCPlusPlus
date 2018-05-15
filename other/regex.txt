@@ -1,0 +1,39 @@
+Regex
+
+you can either match: 
+-letter for letter
+-match nothing
+-union of 2 regexs
+-concatenation of 2 regexs
+-repetition (*) of 0 or more of a single regex
+
+ab[ab]*
+would be an a, followed by a b, followed by 0 or more as or bs
+can also write it with parentheses as:
+ab(a|b)*
+
+depends on the library, but some examples:
+\d is any number (a group of digits)
+[A-Za-z] is any letter
+
+any word that has at least 3 as:
+[ab]*a[b]*a[b]*a[ab]*
+(a|b)*a[b]*a[b]*a(a|b)*
+
+|x| is odd and x begins with bb
+bb(a|b)((a|b)(a|b))*
+bb[ab][[ab][ab]]*
+
+x contains aa as a substring
+[ab]*aa[ab]*
+
+x doesn't contain aa as a substring
+(b|ab)* 
+because every time you have an a, it must be followed by a b
+
+x begins with ab or ends with b or both
+(ab[ab]*)|([ab]*b)
+
+tip: always check for number of mandatory letters
+
+
